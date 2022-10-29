@@ -8,7 +8,7 @@ from .lifebar import Lifebar
 class Entity:
     unique_id = 0
 
-    def __init__(self, x, y, width, height, color, name="unnamed_entity", max_health=999999, immortal=False):
+    def __init__(self, x, y, width, height, color=RED, name="unnamed_entity", max_health=999999, immortal=False):
         self.name = name
         self.id = Entity.unique_id
         Entity.unique_id += 1
