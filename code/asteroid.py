@@ -8,6 +8,7 @@ class Asteroid:
         self.image = pygame.image.load("assets/images/asteroid.png").convert_alpha()
         self.rect = self.image.get_rect()
         self.angle = 0
+        self.column_pos = column_pos
         self.posses = {i: int(WINDOW_SIZE[0]//total_columns * (i-0.5)) for i in range(1, total_columns+1)}
         self.rect.center = (self.posses[column_pos], y)
         
