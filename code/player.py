@@ -13,13 +13,8 @@ class Player:
         self.vel_mod = 4
         self.column_pos = ceil(total_columns/2)
         self.rect.center = (WINDOW_SIZE[0] * self.column_pos / (total_columns + 1), y)
-        self.posses = {  # TODO?
-            1: 100,
-            2: 300,
-            3: 500,
-            4: 700,
-            5: 900
-        }
+        self.posses = {i: int(WINDOW_SIZE[0]//total_columns * (i-0.5)) for i in range(1, total_columns+1)}
+        print(self.posses)
         
     def update(self):
         self.rect.x += self.velx
@@ -30,9 +25,6 @@ class Player:
         elif direction == 'left' and self.column_pos > 1:
             self.column_pos -= 1
         
-        # dx = WINDOW_SIZE[0] / (self.total_columns + 1)  # TODO responsive total_columns?
-        # self.rect.centerx = WINDOW_SIZE[0] * self.column_pos / (self.total_columns + 1)
-        # self.rect.centerx = dx * (self.column_pos)
         self.rect.centerx = self.posses[self.column_pos]        
         
     def draw(self, screen):
