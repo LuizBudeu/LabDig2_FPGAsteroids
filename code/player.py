@@ -12,10 +12,9 @@ class Player:
         self.velx = 0
         self.vel_mod = 4
         self.column_pos = ceil(total_columns/2)
-        self.rect.center = (WINDOW_SIZE[0] * self.column_pos / (total_columns + 1), y)
         self.posses = {i: int(WINDOW_SIZE[0]//total_columns * (i-0.5)) for i in range(1, total_columns+1)}
-        print(self.posses)
-        
+        self.rect.center = (self.posses[self.column_pos], y)
+                
     def update(self):
         self.rect.x += self.velx
         

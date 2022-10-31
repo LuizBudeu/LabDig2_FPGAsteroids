@@ -131,7 +131,7 @@ class Game:
     def draw_column_lines(self):
         for i in range(1, self.total_columns):
             dx = WINDOW_SIZE[0] / self.total_columns
-            pygame.draw.line(self.screen, WHITE, (dx * i, 0), (dx * i, WINDOW_SIZE[1]), 2)
+            pygame.draw.line(self.screen, WHITE, (dx * i - 1, 0), (dx * i, WINDOW_SIZE[1]), 2)
             
     def draw_background(self):
         for i in range(3):
