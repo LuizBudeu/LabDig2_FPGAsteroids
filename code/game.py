@@ -63,7 +63,7 @@ class Game:
     def init_game(self):
         self.total_columns = 5
         
-        self.player = Player(self.total_columns, y=WINDOW_SIZE[1]//2 + 350)
+        self.player = Player(self.total_columns, y=WINDOW_SIZE[1]-50)
         self.asteroids = []
         
         self.background = pygame.image.load("assets/images/background.png")
@@ -142,9 +142,9 @@ class Game:
             self.scroll = 0
             
     def draw_vision_lines(self):
-        write_text(self.screen, "Collision line", 14, RED, topleft_pos=(WINDOW_SIZE[0] - 95, 710))
-        pygame.draw.line(self.screen, RED, (0, 700), (WINDOW_SIZE[0], 700), 2)
+        write_text(self.screen, "Collision line", 14, RED, topleft_pos=(WINDOW_SIZE[0]-95, WINDOW_SIZE[1]-90))
+        pygame.draw.line(self.screen, RED, (0, WINDOW_SIZE[1]-100), (WINDOW_SIZE[0], WINDOW_SIZE[1]-100), 2)
         
-        write_text(self.screen, "Evasion line", 14, YELLOW, topleft_pos=(WINDOW_SIZE[0] - 90, 410))
-        pygame.draw.line(self.screen, YELLOW, (0, 400), (WINDOW_SIZE[0], 400), 2)
+        write_text(self.screen, "Evasion line", 14, YELLOW, topleft_pos=(WINDOW_SIZE[0]-90, WINDOW_SIZE[1]//2))
+        pygame.draw.line(self.screen, YELLOW, (0, WINDOW_SIZE[1]//2), (WINDOW_SIZE[0], WINDOW_SIZE[1]//2), 2)
         
