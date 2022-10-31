@@ -19,7 +19,8 @@ class Game:
         self.main_menu()
     
     def game_loop(self, mode=1):
-        while True:
+        done = False
+        while not done:
             
             for event in pygame.event.get():
                 # Quit event
@@ -47,7 +48,7 @@ class Game:
                         self.create_asteroid(5)
                         
                     if event.key == pygame.K_ESCAPE:
-                        self.main_menu()
+                        done = True
                         
                     if event.key == pygame.K_q:  # TODO remove
                         pygame.quit()
