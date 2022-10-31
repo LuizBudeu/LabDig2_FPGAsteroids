@@ -5,7 +5,7 @@ from .common.ui_utils import *
 
 class Player:
     def __init__(self, total_columns, x=WINDOW_SIZE[0]//2, y=WINDOW_SIZE[1]//2):
-        self.image = pygame.image.load("assets/images/spaceship_player.png")
+        self.image = pygame.image.load("assets/images/spaceship_player.png").convert_alpha()
         self.rect = self.image.get_rect()
         
         self.total_columns = total_columns
@@ -13,20 +13,27 @@ class Player:
         self.vel_mod = 4
         self.column_pos = ceil(total_columns/2)
         self.rect.center = (WINDOW_SIZE[0] * self.column_pos / (total_columns + 1), y)
+        self.posses = {  # TODO?
+            1: 100,
+            2: 300,
+            3: 500,
+            4: 700,
+            5: 900
+        }
         
     def update(self):
         self.rect.x += self.velx
         
     def move(self, direction):
-        print(self.column_pos)
-        if direction == 'right':
+        if direction == 'right' and self.column_pos < self.total_columns:
             self.column_pos += 1
-        elif direction == 'left':
+        elif direction == 'left' and self.column_pos > 1:
             self.column_pos -= 1
-        else:
-            raise Exception(f"Invalid direction {direction}")
         
-        self.rect.centerx = WINDOW_SIZE[0] * self.column_pos / (self.total_columns + 1)
+        # dx = WINDOW_SIZE[0] / (self.total_columns + 1)  # TODO responsive total_columns?
+        # self.rect.centerx = WINDOW_SIZE[0] * self.column_pos / (self.total_columns + 1)
+        # self.rect.centerx = dx * (self.column_pos)
+        self.rect.centerx = self.posses[self.column_pos]        
         
     def draw(self, screen):
         screen.blit(self.image, self.rect)
