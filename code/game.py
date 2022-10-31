@@ -1,3 +1,4 @@
+from asyncore import write
 import pygame
 import sys
 from .common.settings import *
@@ -15,10 +16,11 @@ class Game:
         pygame.display.set_icon(pygame.image.load('assets/images/spaceship_icon.png'))
 
         self.init_game()
-        self.game_loop()
+        self.main_menu()
     
-    def game_loop(self):
-        while True:            
+    def game_loop(self, mode=1):
+        while True:
+            
             for event in pygame.event.get():
                 # Quit event
                 if event.type == pygame.QUIT:
@@ -44,11 +46,15 @@ class Game:
                     if event.key == pygame.K_5:
                         self.create_asteroid(5)
                         
+                    if event.key == pygame.K_ESCAPE:
+                        self.main_menu()
+                        
                     if event.key == pygame.K_q:  # TODO remove
                         pygame.quit()
                         sys.exit()
                 
-            self.screen_update()
+            self.screen_update()          
+            write_text(self.screen, f"modo={mode}", 14, WHITE, topleft_pos=(5, 5))  # TODO mover para outro lugar  
                     
             pygame.display.update()
             self.clock.tick(120)
@@ -71,6 +77,40 @@ class Game:
         
         self.handle_player()
         self.handle_asteroids()
+        
+    def main_menu(self):
+        play1_button = Button(self.screen, text="Jogar modo 1", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
+        
+        play2_button = Button(self.screen, text="Jogar modo 2", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 + 100), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
+        
+        play3_button = Button(self.screen, text="Jogar modo 3", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 + 200), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
+        
+        play4_button = Button(self.screen, text="Jogar modo 4", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 + 300), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
+        
+        while True: 
+            self.draw_background()
+            
+            write_text(self.screen, "FPGAsteroids", 70, WHITE, center_pos=(WINDOW_SIZE[0]//2, 150))
+            play1_button.draw()
+            play2_button.draw()
+            play3_button.draw()
+            play4_button.draw()
+                        
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        if play1_button.hovering():
+                            self.game_loop(1)
+                    if event.button == 1:
+                        if play2_button.hovering():
+                            self.game_loop(2)
+
+            pygame.display.update()
+            self.clock.tick(120) 
             
     def handle_asteroids(self):
         for asteroid in self.asteroids:
