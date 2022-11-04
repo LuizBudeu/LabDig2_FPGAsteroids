@@ -1,4 +1,3 @@
-from asyncore import write
 import pygame
 import sys
 from .common.settings import *
