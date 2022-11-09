@@ -8,7 +8,7 @@ from paho.mqtt import client as mqtt_client
 
 
 broker = 'broker.emqx.io'
-port = 1883
+port = 80
 topic = "FPGAsteroids"
 # generate client ID with pub prefix randomly
 client_id = "b9ba9369-ea8a-4de1-b029-40d3b04f9d25"

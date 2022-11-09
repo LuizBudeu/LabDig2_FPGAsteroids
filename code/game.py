@@ -1,10 +1,13 @@
 import pygame
-import sys
+import sys, os
 from .common.settings import *
 from .common.ui_utils import *
 from .player import Player
 from .asteroid import Asteroid
+from .mqtt.client import send_to_game
 
+
+FPS = 90
 
 class Game:
     def __init__(self):
@@ -25,9 +28,9 @@ class Game:
                     
                 if event.type == pygame.KEYDOWN:
                     # Movement events
-                    if event.key == pygame.K_a:
+                    if event.key == pygame.K_a or self.mqtt_msg == 'a':  # TODO debugar mqqt_msg
                         self.player.move('left')
-                    if event.key == pygame.K_d:
+                    if event.key == pygame.K_d or self.mqtt_msg == 'd':
                         self.player.move('right')
                         
                     # Asteroid events
@@ -54,7 +57,7 @@ class Game:
             self.screen_update()
                     
             pygame.display.update()
-            self.clock.tick(120)
+            self.clock.tick(FPS)
             
     def init_game(self):
         self.total_columns = 5
@@ -68,6 +71,8 @@ class Game:
         self.background = pygame.image.load("assets/images/background.png")
         self.background_height = self.background.get_height()
         self.scroll = 0
+
+        self.mqtt_msg = send_to_game()
             
     def screen_update(self):
         self.draw_background()
@@ -75,6 +80,8 @@ class Game:
         self.draw_vision_lines()
         self.update_ui()          
         
+        self.mqtt_msg = send_to_game()
+
         self.handle_player()
         self.handle_asteroids()
         
@@ -110,15 +117,43 @@ class Game:
                             chosen = True
 
             pygame.display.update()
-            self.clock.tick(120) 
+            self.clock.tick(FPS) 
             
         self.game_loop()
     
     def check_lose_state(self):
         for asteroid in self.asteroids:
-            if asteroid.column_pos == self.player.column_pos and asteroid.rect.centery > WINDOW_SIZE[1]-100:  # Collision line
-                self.start_game()
+            if asteroid.rect.centery > WINDOW_SIZE[1]-100 and asteroid.column_pos == self.player.column_pos:  # Collision line
+                draw_transparent_rect(self.screen, topleft_pos=(0,0))
+                self.lose_screen()
 
+    def lose_screen(self):
+        play1_button = Button(self.screen, text="Recomeçar", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
+        play2_button = Button(self.screen, text="Menu Principal", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 + 100), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
+        
+        chosen = False
+        while not chosen:             
+            write_text(self.screen, "Você perdeu!", 70, WHITE, center_pos=(WINDOW_SIZE[0]//2, 150))
+            play1_button.draw()
+            play2_button.draw()
+                        
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        if play1_button.hovering():
+                            self.init_game()
+                            self.game_loop()
+
+                        if play2_button.hovering():
+                            self.start_game()
+
+            pygame.display.update()
+            self.clock.tick(FPS)     
+        
     def start_game(self):
         self.init_game()
         self.main_menu()

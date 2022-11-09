@@ -46,7 +46,7 @@ def write_text(screen, text='Insert text here', font_size=50, color=(0, 0, 0), c
     screen.blit(text_surf, text_rect)
 
 
-def draw_transparent_rect(screen, center_pos=(100, 100), topleft_pos=None, dim=WINDOW_SIZE, color=(255, 255, 255)):
+def draw_transparent_rect(screen, center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), topleft_pos=None, dim=WINDOW_SIZE, color=(255, 255, 255)):
     s = pygame.Surface(dim)  # the size of your rect
     s.set_alpha(128)                # alpha level
     s.fill(color)           # this fills the entire surface
