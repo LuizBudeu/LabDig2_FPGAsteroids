@@ -14,7 +14,7 @@ class Game:
         pygame.display.set_caption("FPGAsteroids")
         pygame.display.set_icon(pygame.image.load('assets/images/spaceship_icon.png'))
     
-    def game_loop(self, mode=1, debug=False):
+    def game_loop(self):
         done = False
         while not done:
             for event in pygame.event.get():
@@ -44,20 +44,23 @@ class Game:
                         
                     if event.key == pygame.K_ESCAPE:
                         # done = True
-                        self.main_menu(debug)  # TODO debugar isso
+                        self.main_menu()  # TODO debugar isso
                         
                     if event.key == pygame.K_q:  # TODO remove
                         pygame.quit()
                         sys.exit()
                 
             self.check_lose_state()
-            self.screen_update(mode, debug)
+            self.screen_update()
                     
             pygame.display.update()
             self.clock.tick(120)
             
     def init_game(self):
         self.total_columns = 5
+        self.score = 0
+        self.mode = 0
+        self.debug = False
         
         self.player = Player(self.total_columns, y=WINDOW_SIZE[1]-50)
         self.asteroids = []
@@ -66,22 +69,23 @@ class Game:
         self.background_height = self.background.get_height()
         self.scroll = 0
             
-    def screen_update(self, mode, debug):
+    def screen_update(self):
         self.draw_background()
         self.draw_column_lines()
         self.draw_vision_lines()
-        self.update_ui(mode, debug)          
+        self.update_ui()          
         
         self.handle_player()
         self.handle_asteroids()
         
-    def main_menu(self, debug=False):
+    def main_menu(self):
         play1_button = Button(self.screen, text="Jogar modo 1", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
         play2_button = Button(self.screen, text="Jogar modo 2", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 + 100), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
         play3_button = Button(self.screen, text="Jogar modo 3", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 + 200), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
         play4_button = Button(self.screen, text="Jogar modo 4", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 + 300), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
         
-        while True: 
+        chosen = False
+        while not chosen: 
             self.draw_background()
             
             write_text(self.screen, "FPGAsteroids", 70, WHITE, center_pos=(WINDOW_SIZE[0]//2, 150))
@@ -98,14 +102,18 @@ class Game:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         if play1_button.hovering():
-                            self.game_loop(1, debug)
+                            self.mode = 1
+                            chosen = True
 
                         if play2_button.hovering():
-                            self.game_loop(2, debug)
+                            self.mode = 2
+                            chosen = True
 
             pygame.display.update()
             self.clock.tick(120) 
-
+            
+        self.game_loop()
+    
     def check_lose_state(self):
         for asteroid in self.asteroids:
             if asteroid.column_pos == self.player.column_pos and asteroid.rect.centery > WINDOW_SIZE[1]-100:  # Collision line
@@ -113,24 +121,32 @@ class Game:
 
     def start_game(self):
         self.init_game()
-        self.main_menu(debug=True)
+        self.main_menu()
 
-    def update_ui(self, mode, debug):
-        write_text(self.screen, f"modo={mode}", 14, WHITE, topleft_pos=(5, 5))
-        if debug:
+    def update_ui(self):
+        write_text(self.screen, f"{self.score}", 60, WHITE, center_pos=(WINDOW_SIZE[0]//2, 50))
+        write_text(self.screen, f"modo={self.mode}", 14, WHITE, topleft_pos=(5, 5))
+        if self.debug:
             write_text(self.screen, f"FPS: {round(self.clock.get_fps())}", 14, WHITE, topleft_pos=(WINDOW_SIZE[0]-70, 5))
             
     def handle_asteroids(self):
         for asteroid in self.asteroids:
             asteroid.update()
             asteroid.draw(self.screen)
+            
+            if self.debug:
+                pygame.draw.rect(self.screen, RED, asteroid.rect, 1)
 
             if asteroid.rect.y > WINDOW_SIZE[1]:
                 self.asteroids.remove(asteroid)
+                self.score += 1
         
     def handle_player(self):
         self.player.update()
         self.player.draw(self.screen)
+        
+        if self.debug:
+            pygame.draw.rect(self.screen, YELLOW, self.player.rect, 1)
     
     def create_asteroid(self, column):
         self.asteroids.append(Asteroid(column, self.total_columns))
