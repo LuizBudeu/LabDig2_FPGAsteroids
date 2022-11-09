@@ -25,13 +25,15 @@ def on_connect(client, userdata, flags, rc):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     print(f"{msg.topic} {msg.payload.decode('utf-8')}")
-    send_to_game(msg.payload.decode('utf-8'))
+    # send_to_game(msg.payload.decode('utf-8'))
+    with open('code/mqtt/msg.txt', 'w') as f:
+        f.write(msg.payload.decode('utf-8'))
     # message = msg.payload.decode('utf-8')
     # return message
 
-def send_to_game(msg=None):
-    if msg is not None:
-        return msg
+# def send_to_game(msg=None):
+#     if msg is not None:
+#         return msg
 
 
 client = mqtt.Client()                      # Criacao do cliente MQTT

@@ -4,7 +4,7 @@ from .common.settings import *
 from .common.ui_utils import *
 from .player import Player
 from .asteroid import Asteroid
-from .mqtt.client import send_to_game
+from .mqtt.client import client
 
 
 FPS = 90
@@ -28,9 +28,9 @@ class Game:
                     
                 if event.type == pygame.KEYDOWN:
                     # Movement events
-                    if event.key == pygame.K_a or self.mqtt_msg == 'a':  # TODO debugar mqqt_msg
+                    if event.key == pygame.K_a:
                         self.player.move('left')
-                    if event.key == pygame.K_d or self.mqtt_msg == 'd':
+                    if event.key == pygame.K_d:
                         self.player.move('right')
                         
                     # Asteroid events
@@ -52,9 +52,17 @@ class Game:
                     if event.key == pygame.K_q:  # TODO remove
                         pygame.quit()
                         sys.exit()
+
+            if self.mqtt_msg == 'a':
+                self.player.move('left')
+            if self.mqtt_msg == 'd':
+                self.player.move('right')
+
+            if self.mqtt_msg is not None:
+                self.mqtt_msg = None
+                os.remove(self.mqtt_msg_path)
                 
-            self.check_lose_state()
-            self.screen_update()
+            self.update()
                     
             pygame.display.update()
             self.clock.tick(FPS)
@@ -72,18 +80,31 @@ class Game:
         self.background_height = self.background.get_height()
         self.scroll = 0
 
-        self.mqtt_msg = send_to_game()
-            
+        self.mqtt_msg = None
+        self.mqtt_msg_path = 'code/mqtt/msg.txt'
+        if os.path.exists(self.mqtt_msg_path):
+            os.remove(self.mqtt_msg_path)
+
     def screen_update(self):
         self.draw_background()
         self.draw_column_lines()
         self.draw_vision_lines()
         self.update_ui()          
-        
-        self.mqtt_msg = send_to_game()
 
         self.handle_player()
         self.handle_asteroids()
+
+    def update(self):
+        self.check_lose_state()
+        self.read_mqtt_msg()
+        self.screen_update()
+
+    def read_mqtt_msg(self):
+        try:
+            with open(self.mqtt_msg_path, 'r') as f:
+                self.mqtt_msg = f.read()
+        except FileNotFoundError:
+            pass
         
     def main_menu(self):
         play1_button = Button(self.screen, text="Jogar modo 1", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
