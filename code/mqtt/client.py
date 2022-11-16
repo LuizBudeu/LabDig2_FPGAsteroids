@@ -9,7 +9,7 @@ Port = 80                           # Porta utilizada (firewall da USP exige 80)
 KeepAlive = 60                      # Intervalo de timeout (60s)
 # TopicoL = user+"/req"               # Topico que sera lido
 # TopicoE = user+"/resp"              # Topico que sera escrito
-topic = user+'/input'
+topics = [(user+'/input', 0), (user+'/pos', 0)]
 
 db = 1                              # Flag de depuracao (verbose)
 message = None
@@ -20,7 +20,8 @@ def on_connect(client, userdata, flags, rc):
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe(topic)
+    client.subscribe(topics)
+    # client.subscribe(user+'/pos')
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
