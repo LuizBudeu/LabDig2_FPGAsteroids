@@ -4,10 +4,13 @@ from .common.settings import *
 from .common.ui_utils import *
 from .player import Player
 from .asteroid import Asteroid
-from .mqtt.client import client
+from .mqtt.client import client as mqtt_client
+from .serial.connection import ser
 
 
 FPS = 90
+ser.open()
+
 
 class Game:
     def __init__(self):
@@ -23,8 +26,7 @@ class Game:
             for event in pygame.event.get():
                 # Quit event
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.quit()
                     
                 if event.type == pygame.KEYDOWN:
                     # Movement events
@@ -62,15 +64,25 @@ class Game:
                 os.remove(self.mqtt_msg_path)
                 
             self.update()
+            self.serial_frame_count += 1
                     
             pygame.display.update()
             self.clock.tick(FPS)
             
     def init_game(self, mode=0):
+        self.serial_frame_count = 0
+
         self.total_columns = 5
         self.score = 0
         self.mode = mode
         self.debug = False
+        self.pos_to_column = {
+            '020': 1,
+            '040': 2,
+            '060': 3,
+            '080': 4,
+            '100': 5
+        }
         
         self.player = Player(self.total_columns, y=WINDOW_SIZE[1]-50)
         self.asteroids = []
@@ -98,6 +110,50 @@ class Game:
         self.screen_update()
         self.check_lose_state()
 
+        if self.mode == 1:
+            if self.serial_frame_count > 20:
+                msg = ser.read(8).decode('utf-8')
+                # print(msg)
+                if msg[4] == '0':
+                    print(msg)
+                    pos = self.pos_to_column[msg[:3]]
+                    # print(pos)
+                    dist = int(msg[4:-1])*580/50
+                    # print(dist)
+                    already_exists = False
+                    for asteroid in self.asteroids:
+                        if pos == asteroid.column_pos:
+                            already_exists = True
+                            asteroid.move(dist)
+
+                    if not already_exists:
+                        self.asteroids.append(Asteroid(pos, self.total_columns, y=dist))
+
+                    self.player.move(pos=pos)
+                    self.serial_frame_count = 0
+
+        if self.mode == 2: 
+            if dist := self.dist_to_serial():
+                if self.serial_frame_count > 20:
+                    ser.write(dist.encode())
+                    pos = ser.read(8).decode('utf-8')[:3]
+                    self.player.move(pos=self.pos_to_column[pos])
+                    self.serial_frame_count = 0
+                
+    def dist_to_serial(self):
+        dist = -9999
+        for asteroid in self.asteroids:
+            if asteroid.column_pos == self.player.column_pos:
+                dist = self.player.rect.centery - asteroid.rect.centery
+            
+        dist = int(dist*50/700)
+
+        if dist >= 0:
+            dist = str(dist)[::-1]
+            dist += '0'
+            return dist
+        return None
+
     def read_mqtt_msg(self):
         try:
             with open(self.mqtt_msg_path, 'r') as f:
@@ -123,8 +179,7 @@ class Game:
                         
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.quit()
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
@@ -156,8 +211,7 @@ class Game:
                         
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.quit()
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
@@ -166,6 +220,11 @@ class Game:
 
             pygame.display.update()
             self.clock.tick(FPS) 
+
+    def quit(self):
+        ser.close()
+        pygame.quit()
+        sys.exit()
                 
     def check_lose_state(self):
         for asteroid in self.asteroids:
@@ -185,8 +244,7 @@ class Game:
                         
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.quit()
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
