@@ -106,17 +106,14 @@ class Game:
         self.handle_asteroids()
 
     def update(self):
-        self.read_mqtt_msg()
-        self.screen_update()
-        self.check_lose_state()
-
         if self.mode == 1:
             if self.serial_frame_count > 18:
                 msg = ser.read(8).decode('utf-8')
                 if msg[4] == '0':
                     print(msg)
                     pos = self.pos_to_column[msg[:3]]
-                    dist = int(msg[4:-1])*580/50
+                    dist = 700 - int(msg[4:-1])*(700/50)
+                    print(dist)
                     already_exists = False
                     for asteroid in self.asteroids:
                         if pos == asteroid.column_pos:
@@ -133,9 +130,16 @@ class Game:
             if dist := self.dist_to_serial():
                 if self.serial_frame_count > 18:
                     ser.write(dist.encode())
+                    print(dist.encode())
                     pos = ser.read(8).decode('utf-8')[:3]
-                    self.player.move(pos=self.pos_to_column[pos])
-                    self.serial_frame_count = 0
+                    print(pos)
+                    if pos:
+                        self.player.move(pos=self.pos_to_column[pos])
+                        self.serial_frame_count = 0
+
+        self.read_mqtt_msg()
+        self.screen_update()
+        self.check_lose_state()
                 
     def dist_to_serial(self):
         dist = -9999
@@ -143,7 +147,7 @@ class Game:
             if asteroid.column_pos == self.player.column_pos:
                 dist = self.player.rect.centery - asteroid.rect.centery
             
-        dist = int(dist*50/700)
+        dist = int(dist*50/580)
 
         if dist >= 0:
             dist = str(dist)[::-1]
@@ -225,7 +229,7 @@ class Game:
                 
     def check_lose_state(self):
         for asteroid in self.asteroids:
-            if asteroid.rect.centery > WINDOW_SIZE[1]-100 and asteroid.column_pos == self.player.column_pos:  # Collision line
+            if asteroid.rect.centery > WINDOW_SIZE[1]-100 and asteroid.column_pos == self.player.column_pos and asteroid.rect.centery < WINDOW_SIZE[1]-32:  # Collision line
                 draw_transparent_rect(self.screen, topleft_pos=(0,0))
                 self.lose_screen()
 
