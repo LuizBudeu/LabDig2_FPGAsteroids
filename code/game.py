@@ -111,15 +111,12 @@ class Game:
         self.check_lose_state()
 
         if self.mode == 1:
-            if self.serial_frame_count > 20:
+            if self.serial_frame_count > 18:
                 msg = ser.read(8).decode('utf-8')
-                # print(msg)
                 if msg[4] == '0':
                     print(msg)
                     pos = self.pos_to_column[msg[:3]]
-                    # print(pos)
                     dist = int(msg[4:-1])*580/50
-                    # print(dist)
                     already_exists = False
                     for asteroid in self.asteroids:
                         if pos == asteroid.column_pos:
@@ -134,7 +131,7 @@ class Game:
 
         if self.mode == 2: 
             if dist := self.dist_to_serial():
-                if self.serial_frame_count > 20:
+                if self.serial_frame_count > 18:
                     ser.write(dist.encode())
                     pos = ser.read(8).decode('utf-8')[:3]
                     self.player.move(pos=self.pos_to_column[pos])
