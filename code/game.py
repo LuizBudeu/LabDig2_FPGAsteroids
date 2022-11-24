@@ -1,5 +1,5 @@
 import pygame
-import sys, os
+import sys, os, time
 from .common.settings import *
 from .common.ui_utils import *
 from .player import Player
@@ -62,15 +62,15 @@ class Game:
             if self.mqtt_msg is not None:
                 self.mqtt_msg = None
                 os.remove(self.mqtt_msg_path)
-                
-            self.update()
             self.serial_frame_count += 1
+            self.update()
                     
             pygame.display.update()
             self.clock.tick(FPS)
             
     def init_game(self, mode=0):
         self.serial_frame_count = 0
+        ser.flushInput()
 
         self.total_columns = 5
         self.score = 0
@@ -107,7 +107,7 @@ class Game:
 
     def update(self):
         if self.mode == 1:
-            if self.serial_frame_count > 18:
+            if self.serial_frame_count > 17:
                 msg = ser.read(8).decode('utf-8')
                 if msg[4] == '0':
                     print(msg)
@@ -125,6 +125,7 @@ class Game:
 
                     self.player.move(pos=pos)
                     self.serial_frame_count = 0
+                    ser.flushInput()
 
         if self.mode == 2: 
             if dist := self.dist_to_serial():
@@ -145,9 +146,9 @@ class Game:
         dist = -9999
         for asteroid in self.asteroids:
             if asteroid.column_pos == self.player.column_pos:
-                dist = self.player.rect.centery - asteroid.rect.centery
+                dist = WINDOW_SIZE[1] - asteroid.rect.centery
             
-        dist = int(dist*50/580)
+        dist = int(dist*50/700)
 
         if dist >= 0:
             dist = str(dist)[::-1]
@@ -229,7 +230,7 @@ class Game:
                 
     def check_lose_state(self):
         for asteroid in self.asteroids:
-            if asteroid.rect.centery > WINDOW_SIZE[1]-100 and asteroid.column_pos == self.player.column_pos and asteroid.rect.centery < WINDOW_SIZE[1]-32:  # Collision line
+            if asteroid.rect.centery > WINDOW_SIZE[1]-140 and asteroid.column_pos == self.player.column_pos:  # Collision line
                 draw_transparent_rect(self.screen, topleft_pos=(0,0))
                 self.lose_screen()
 
@@ -305,8 +306,8 @@ class Game:
             self.scroll = 0
             
     def draw_vision_lines(self):
-        write_text(self.screen, "Collision line", 14, RED, topleft_pos=(WINDOW_SIZE[0]-95, WINDOW_SIZE[1]-95))
-        pygame.draw.line(self.screen, RED, (0, WINDOW_SIZE[1]-100), (WINDOW_SIZE[0], WINDOW_SIZE[1]-100), 2)
+        write_text(self.screen, "Collision line", 14, RED, topleft_pos=(WINDOW_SIZE[0]-145, WINDOW_SIZE[1]-145))
+        pygame.draw.line(self.screen, RED, (0, WINDOW_SIZE[1]-140), (WINDOW_SIZE[0], WINDOW_SIZE[1]-140), 2)
         
         write_text(self.screen, "Evasion line", 14, YELLOW, topleft_pos=(WINDOW_SIZE[0]-90, WINDOW_SIZE[1]//2+5))
         pygame.draw.line(self.screen, YELLOW, (0, WINDOW_SIZE[1]//2), (WINDOW_SIZE[0], WINDOW_SIZE[1]//2), 2)
