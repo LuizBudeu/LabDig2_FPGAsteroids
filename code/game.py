@@ -109,8 +109,8 @@ class Game:
         if self.mode == 1:
             if self.serial_frame_count > 17:
                 msg = ser.read(8).decode('utf-8')
+                print(msg)
                 if msg[4] == '0':
-                    print(msg)
                     pos = self.pos_to_column[msg[:3]]
                     dist = 700 - int(msg[4:-1])*(700/50)
                     print(dist)
@@ -129,14 +129,14 @@ class Game:
 
         if self.mode == 2: 
             if dist := self.dist_to_serial():
-                if self.serial_frame_count > 18:
+                if self.serial_frame_count > 17:
                     ser.write(dist.encode())
                     print(dist.encode())
                     pos = ser.read(8).decode('utf-8')[:3]
                     print(pos)
                     if pos:
                         self.player.move(pos=self.pos_to_column[pos])
-                        self.serial_frame_count = 0
+                    self.serial_frame_count = 0
 
         self.read_mqtt_msg()
         self.screen_update()
