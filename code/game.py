@@ -31,9 +31,15 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     # Movement events
                     if event.key == pygame.K_a:
-                        self.player.move('left')
+                        if self.mode == 3:
+                            ser.write('a'.encode())
+                        else:
+                            self.player.move('left')
                     if event.key == pygame.K_d:
-                        self.player.move('right')
+                        if self.mode == 3:
+                            ser.write('d'.encode())
+                        else:
+                            self.player.move('right')
                         
                     # Asteroid events
                     if event.key == pygame.K_1:
@@ -106,12 +112,13 @@ class Game:
         self.handle_asteroids()
 
     def update(self):
-        if self.mode == 1:
+        if self.mode == 1 or self.mode == 3:
             if self.serial_frame_count > 17:
                 msg = ser.read(8).decode('utf-8')
                 print(msg)
+                pos = self.pos_to_column[msg[:3]]
+                self.player.move(pos=pos)
                 if msg[4] == '0':
-                    pos = self.pos_to_column[msg[:3]]
                     dist = 700 - int(msg[4:-1])*(700/50)
                     print(dist)
                     already_exists = False
@@ -123,20 +130,27 @@ class Game:
                     if not already_exists:
                         self.asteroids.append(Asteroid(pos, self.total_columns, y=dist))
 
-                    self.player.move(pos=pos)
-                    self.serial_frame_count = 0
                     ser.flushInput()
+                self.serial_frame_count = 0
 
-        if self.mode == 2: 
-            if dist := self.dist_to_serial():
-                if self.serial_frame_count > 17:
-                    ser.write(dist.encode())
-                    print(dist.encode())
-                    pos = ser.read(8).decode('utf-8')[:3]
-                    print(pos)
-                    if pos:
-                        self.player.move(pos=self.pos_to_column[pos])
-                    self.serial_frame_count = 0
+        if self.mode == 2 or self.mode == 4: 
+            if self.serial_frame_count > 17:
+                self.serial_frame_count = 0
+
+                if dist := self.dist_to_serial():
+                        ser.write(dist.encode())
+                        print(dist.encode())
+                        pos = ser.read(8).decode('utf-8')[:3]
+                        print(pos)
+                        if pos:
+                            self.player.move(pos=self.pos_to_column[pos])
+                else:
+                    if self.mode == 4:
+                        ser.write('fff'.encode())
+                        pos = ser.read(8).decode('utf-8')[:3]
+                        if pos:
+                            self.player.move(pos=self.pos_to_column[pos])
+
 
         self.read_mqtt_msg()
         self.screen_update()
@@ -149,10 +163,13 @@ class Game:
                 dist = WINDOW_SIZE[1] - asteroid.rect.centery
             
         dist = int(dist*50/700)
+        t_dist = dist
 
         if dist >= 0:
             dist = str(dist)[::-1]
             dist += '0'
+            if t_dist < 10:
+                dist += '0'
             return dist
         return None
 
@@ -192,6 +209,14 @@ class Game:
                         if play2_button.hovering():
                             self.mode = 2
                             chosen = True
+
+                        if play3_button.hovering():
+                            self.mode = 3
+                            chosen = True
+
+                        if play4_button.hovering():
+                            self.mode = 4
+                            chosen = True
                 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -230,7 +255,10 @@ class Game:
                 
     def check_lose_state(self):
         for asteroid in self.asteroids:
-            if asteroid.rect.centery > WINDOW_SIZE[1]-140 and asteroid.column_pos == self.player.column_pos:  # Collision line
+            if asteroid.rect.centery > WINDOW_SIZE[1]-120 and asteroid.column_pos == self.player.column_pos:  # Collision line
+                if self.mode == 2 or self.mode == 4:
+                    dist = self.dist_to_serial()
+                    ser.write(dist.encode())
                 draw_transparent_rect(self.screen, topleft_pos=(0,0))
                 self.lose_screen()
 
@@ -306,8 +334,8 @@ class Game:
             self.scroll = 0
             
     def draw_vision_lines(self):
-        write_text(self.screen, "Collision line", 14, RED, topleft_pos=(WINDOW_SIZE[0]-145, WINDOW_SIZE[1]-145))
-        pygame.draw.line(self.screen, RED, (0, WINDOW_SIZE[1]-140), (WINDOW_SIZE[0], WINDOW_SIZE[1]-140), 2)
+        write_text(self.screen, "Collision line", 14, RED, topleft_pos=(WINDOW_SIZE[0]-95, WINDOW_SIZE[1]-125))
+        pygame.draw.line(self.screen, RED, (0, WINDOW_SIZE[1]-130), (WINDOW_SIZE[0], WINDOW_SIZE[1]-130), 2)
         
         write_text(self.screen, "Evasion line", 14, YELLOW, topleft_pos=(WINDOW_SIZE[0]-90, WINDOW_SIZE[1]//2+5))
         pygame.draw.line(self.screen, YELLOW, (0, WINDOW_SIZE[1]//2), (WINDOW_SIZE[0], WINDOW_SIZE[1]//2), 2)
