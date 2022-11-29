@@ -16,10 +16,11 @@ class Asteroid:
         screen.blit(self.image_copy, (self.rect.centerx-self.image_copy.get_width()//2, self.rect.centery-self.image_copy.get_height()//2))
         
     def update(self):
-        self.rect.y += self.vely
+        self.rect.center = (self.posses[self.column_pos], self.rect.center[1] + self.vely) 
         self.angle += 1
         self.image_copy = pygame.transform.rotate(self.image, self.angle)
 
     def move(self, dist):
-        self.rect.y = dist
+        self.rect.center = (self.posses[self.column_pos], dist) 
+
         

@@ -116,21 +116,24 @@ class Game:
             if self.serial_frame_count > 17:
                 msg = ser.read(8).decode('utf-8')
                 print(msg)
-                pos = self.pos_to_column[msg[:3]]
-                self.player.move(pos=pos)
-                if msg[4] == '0':
-                    dist = 700 - int(msg[4:-1])*(700/50)
-                    print(dist)
-                    already_exists = False
-                    for asteroid in self.asteroids:
-                        if pos == asteroid.column_pos:
-                            already_exists = True
-                            asteroid.move(dist)
-
-                    if not already_exists:
-                        self.asteroids.append(Asteroid(pos, self.total_columns, y=dist))
-
-                    ser.flushInput()
+                try:
+                    pos = self.pos_to_column[msg[:3]]
+                    self.player.move(pos=pos)
+                    if msg[4] == '0':
+                        dist = 700 - int(msg[4:-1])*(350/25)
+                        print(dist)
+                        already_exists = False
+                        for asteroid in self.asteroids:
+                            if pos == asteroid.column_pos:
+                                already_exists = True
+                                asteroid.move(dist)
+    
+                        if not already_exists:
+                            self.asteroids.append(Asteroid(pos, self.total_columns, y=dist))
+    
+                        ser.flushInput()
+                except:
+                    pass
                 self.serial_frame_count = 0
 
         if self.mode == 2 or self.mode == 4: 
