@@ -258,7 +258,7 @@ class Game:
                 
     def check_lose_state(self):
         for asteroid in self.asteroids:
-            if asteroid.rect.centery > WINDOW_SIZE[1]-120 and asteroid.column_pos == self.player.column_pos:  # Collision line
+            if asteroid.rect.centery > WINDOW_SIZE[1]-120 and asteroid.column_pos == self.player.column_pos and asteroid.rect.centery < WINDOW_SIZE[1] - 32:  # Collision line
                 if self.mode == 2 or self.mode == 4:
                     dist = self.dist_to_serial()
                     ser.write(dist.encode())
