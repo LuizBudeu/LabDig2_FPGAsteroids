@@ -4,14 +4,14 @@ from .common.settings import *
 from .common.ui_utils import *
 from .player import Player
 from .asteroid import Asteroid
-# from .mqtt.client import client as mqtt_client
+from .mqtt.client import client as mqtt_client
 from .serial.connection import ser
 import csv
 
 
-
 FPS = 90
 ser.open()
+user = 'grupo1-bancadaA6'
 
 game_time = {
     1: 0,
@@ -27,6 +27,8 @@ scores = {
     4: 0
 }
 
+modo0 = '0'
+modo1 = '0'
 
 class Game:
     def __init__(self):
@@ -73,11 +75,25 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         self.stop = time.time()
                         game_time[self.mode] += self.stop - self.start
+                        mqtt_client.publish(user+'/E5', '1')
+                        pygame.time.set_timer(self.cancel_timer, 2000)
                         self.start_game(mode=self.mode)
                         
                     # if event.key == pygame.K_q:
                     #     pygame.quit()
                     #     sys.exit()
+                if event.type == self.initial_timer:
+                    mqtt_client.publish(user+'/E0', '0')
+                    mqtt_client.publish(user+'/E1', '0')
+                    mqtt_client.publish(user+'/E3', '0')
+                    mqtt_client.publish(user+'/E2', '0')
+
+                if event.type == self.confirm_timer:
+                    mqtt_client.publish(user+'/E4', '0')
+
+                # if event.type == self.cancel_timer:
+                #     mqtt_client.publish(user+'/E4', '0')
+
 
             if self.mqtt_msg == 'a':
                 self.player.move('left')
@@ -96,6 +112,10 @@ class Game:
     def init_game(self, mode=0):
         self.serial_frame_count = 0
         ser.flushInput()
+
+        self.initial_timer = pygame.USEREVENT
+        self.confirm_timer = pygame.USEREVENT+1
+        self.cancel_timer = pygame.USEREVENT+2
 
         self.total_columns = 5
         self.score = 0
@@ -205,6 +225,9 @@ class Game:
             pass
         
     def choose_mode_menu(self):
+        global modo0 
+        global modo1
+
         play1_button = Button(self.screen, text="Jogar modo 1", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 - 50), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
         play2_button = Button(self.screen, text="Jogar modo 2", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 + 50), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
         play3_button = Button(self.screen, text="Jogar modo 3", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 + 150), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
@@ -230,18 +253,26 @@ class Game:
                         if play1_button.hovering():
                             self.mode = 1
                             chosen = True
+                            modo0 = '0'
+                            modo1 = '0'
 
                         if play2_button.hovering():
                             self.mode = 2
                             chosen = True
+                            modo0 = '1'
+                            modo1 = '0'
 
                         if play3_button.hovering():
                             self.mode = 3
                             chosen = True
+                            modo0 = '0'
+                            modo1 = '1'
 
                         if play4_button.hovering():
                             self.mode = 4
                             chosen = True
+                            modo0 = '1'
+                            modo1 = '1'
                 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -249,7 +280,13 @@ class Game:
 
             pygame.display.update()
             self.clock.tick(FPS) 
-        
+
+        mqtt_client.publish(user+'/E5', '0')
+        mqtt_client.publish(user+'/E0', '1')
+        mqtt_client.publish(user+'/E1', '1')
+        mqtt_client.publish(user+'/E3', modo0)
+        mqtt_client.publish(user+'/E2', modo1)
+        pygame.time.set_timer(self.initial_timer, 2000)
         self.start = time.time()
         self.game_loop()
     
@@ -295,6 +332,9 @@ class Game:
                 self.lose_screen()
 
     def lose_screen(self):
+        global modo0 
+        global modo1 
+
         play1_button = Button(self.screen, text="Recomeçar", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
         play2_button = Button(self.screen, text="Menu Principal", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 + 100), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
         
@@ -312,20 +352,31 @@ class Game:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         if play1_button.hovering():
+                            mqtt_client.publish(user+'/E0', '1')
+                            mqtt_client.publish(user+'/E1', '1')
+                            mqtt_client.publish(user+'/E3', modo0)
+                            mqtt_client.publish(user+'/E2', modo1)
+                            mqtt_client.publish(user+'/E4', '1')
+                            pygame.time.set_timer(self.initial_timer, 2000)
+                            pygame.time.set_timer(self.confirm_timer, 2000)
                             self.init_game(mode=self.mode)
                             self.game_loop()
 
                         if play2_button.hovering():
                             self.stop = time.time()
                             game_time[self.mode] += self.stop - self.start
+                            mqtt_client.publish(user+'/E4', '1')
+                            pygame.time.set_timer(self.confirm_timer, 2000)
                             self.start_game(mode=self.mode)
-
+        
             pygame.display.update()
             self.clock.tick(FPS)     
         
     def start_game(self, mode=0):
         self.init_game(mode=mode)
-        self.main_menu()
+        mqtt_client.publish(user+'/E5', '1')
+        pygame.time.set_timer(self.cancel_timer, 2000)
+        self.choose_mode_menu()
 
     def update_ui(self):
         write_text(self.screen, f"{self.score}", 60, WHITE, center_pos=(WINDOW_SIZE[0]//2, 50))
