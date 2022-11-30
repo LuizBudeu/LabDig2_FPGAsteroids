@@ -6,7 +6,6 @@ from .player import Player
 from .asteroid import Asteroid
 # from .mqtt.client import client as mqtt_client
 from .serial.connection import ser
-import time
 import csv
 
 
@@ -27,6 +26,8 @@ scores = {
     3: 0,
     4: 0
 }
+
+reaction_time = {}
 
 class Game:
     def __init__(self):
@@ -148,7 +149,7 @@ class Game:
                                 asteroid.move(dist)
     
                         if not already_exists:
-                            self.asteroids.append(Asteroid(pos, self.total_columns, y=dist))
+                            self.create_asteroid(pos, self.total_columns, y=dist)
     
                         ser.flushInput()
                 except:
@@ -334,6 +335,8 @@ class Game:
         for asteroid in self.asteroids:
             asteroid.update()
             asteroid.draw(self.screen)
+            if asteroid.colum_pos == self.player.column_pos and asteroid.rect.centery >= WINDOW_SIZE[1]//2:
+                reaction_time[asteroid] += 1
             
             if self.debug:
                 pygame.draw.rect(self.screen, RED, asteroid.rect, 1)
@@ -341,6 +344,7 @@ class Game:
             if asteroid.rect.y > WINDOW_SIZE[1]:
                 self.asteroids.remove(asteroid)
                 self.score += 1
+                del reaction_time[asteroid]
         
     def handle_player(self):
         self.player.update()
@@ -349,8 +353,10 @@ class Game:
         if self.debug:
             pygame.draw.rect(self.screen, YELLOW, self.player.rect, 1)
     
-    def create_asteroid(self, column):
-        self.asteroids.append(Asteroid(column, self.total_columns))
+    def create_asteroid(self, column, y=70):
+        asteroid = Asteroid(column, self.total_columns, y=y)
+        reaction_time[asteroid] = 0
+        self.asteroids.append(asteroid)
         
     def draw_column_lines(self):
         for i in range(1, self.total_columns):
