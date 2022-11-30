@@ -1,5 +1,5 @@
 import pygame
-import sys, os, time
+import sys, os, time, csv, json
 from .common.settings import *
 from .common.ui_utils import *
 from .player import Player
@@ -109,12 +109,7 @@ class Game:
             '100': 5
         }
         
-        self.reaction_time = {
-            1: [],
-            2: [],
-            3: [],
-            4: []
-        }
+        self.reaction_time = {}
 
         self.player = Player(self.total_columns, y=WINDOW_SIZE[1]-50)
         self.asteroids = []
@@ -343,7 +338,7 @@ class Game:
             asteroid.update()
             asteroid.draw(self.screen)
             if asteroid.column_pos == self.player.column_pos and asteroid.rect.centery >= WINDOW_SIZE[1]//2:
-                # self.reaction_time[asteroid] += 1
+                self.reaction_time[asteroid]['time'] += 1/90
                 pass
             
             if self.debug:
@@ -352,7 +347,8 @@ class Game:
             if asteroid.rect.y > WINDOW_SIZE[1]:
                 self.asteroids.remove(asteroid)
                 self.score += 1
-                # del self.reaction_time[asteroid]
+                self.write_reaction_time(self.reaction_time[asteroid])
+                del self.reaction_time[asteroid]
         
     def handle_player(self):
         self.player.update()
@@ -363,7 +359,7 @@ class Game:
     
     def create_asteroid(self, column, y=70):
         asteroid = Asteroid(column, self.total_columns, y=y)
-        # self.reaction_time[self.mode].append({})
+        self.reaction_time[asteroid] = {'mode': self.mode, 'time': 0}
         self.asteroids.append(asteroid)
         
     def draw_column_lines(self):
@@ -397,4 +393,8 @@ class Game:
         with open('digital_twin/pontuacao.csv', 'a') as f:
             writer = csv.writer(f)
             writer.writerow(l)
+
+    def write_reaction_time(self, reaction_time):
+        with open('digital_twin/tempo_de_reacao.txt', 'a') as f:
+            f.write(json.dumps(reaction_time)+'\n')
             
