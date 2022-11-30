@@ -111,7 +111,7 @@ class Game:
         
         self.reaction_time = {}
 
-        self.player = Player(self.total_columns, y=WINDOW_SIZE[1]-50)
+        self.player = Player(self.total_columns, y=WINDOW_SIZE[1]-60)
         self.asteroids = []
         
         self.background = pygame.image.load("assets/images/background.png")
