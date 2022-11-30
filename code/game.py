@@ -4,13 +4,29 @@ from .common.settings import *
 from .common.ui_utils import *
 from .player import Player
 from .asteroid import Asteroid
-from .mqtt.client import client as mqtt_client
+# from .mqtt.client import client as mqtt_client
 from .serial.connection import ser
+import time
+import csv
+
 
 
 FPS = 90
 ser.open()
 
+game_time = {
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0
+}
+
+scores = {
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0
+}
 
 class Game:
     def __init__(self):
@@ -21,6 +37,7 @@ class Game:
         pygame.display.set_icon(pygame.image.load('assets/images/spaceship_icon.png'))
     
     def game_loop(self):
+        self.screen_name = 'game_loop'
         done = False
         while not done:
             for event in pygame.event.get():
@@ -54,11 +71,13 @@ class Game:
                         self.create_asteroid(5)
                         
                     if event.key == pygame.K_ESCAPE:
-                        self.main_menu()
+                        self.stop = time.time()
+                        game_time[self.mode] += self.stop - self.start
+                        self.start_game(mode=self.mode)
                         
-                    if event.key == pygame.K_q:
-                        pygame.quit()
-                        sys.exit()
+                    # if event.key == pygame.K_q:
+                    #     pygame.quit()
+                    #     sys.exit()
 
             if self.mqtt_msg == 'a':
                 self.player.move('left')
@@ -154,7 +173,6 @@ class Game:
                         if pos:
                             self.player.move(pos=self.pos_to_column[pos])
 
-
         self.read_mqtt_msg()
         self.screen_update()
         self.check_lose_state()
@@ -189,6 +207,7 @@ class Game:
         play3_button = Button(self.screen, text="Jogar modo 3", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 + 150), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
         play4_button = Button(self.screen, text="Jogar modo 4", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 + 250), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
         
+        self.screen_name = 'choose_mode_menu'
         chosen = False
         while not chosen: 
             self.draw_background()
@@ -228,11 +247,13 @@ class Game:
             pygame.display.update()
             self.clock.tick(FPS) 
         
+        self.start = time.time()
         self.game_loop()
     
     def main_menu(self):
         play1_button = Button(self.screen, text="Jogar", font_size=50, dim=(450, 100), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 + 100), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
 
+        self.screen_name = 'main_menu'
         while True: 
             self.draw_background()
             
@@ -252,6 +273,9 @@ class Game:
             self.clock.tick(FPS) 
 
     def quit(self):
+        self.stop = time.time()
+        game_time[self.mode] += self.stop - self.start
+        self.write_game_time()
         ser.close()
         pygame.quit()
         sys.exit()
@@ -263,12 +287,15 @@ class Game:
                     dist = self.dist_to_serial()
                     ser.write(dist.encode())
                 draw_transparent_rect(self.screen, topleft_pos=(0,0))
+                scores[self.mode] = self.score
+                self.write_scores()
                 self.lose_screen()
 
     def lose_screen(self):
         play1_button = Button(self.screen, text="Recomeçar", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
         play2_button = Button(self.screen, text="Menu Principal", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 + 100), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
         
+        self.screen_name = 'lose_screen'
         chosen = False
         while not chosen:             
             write_text(self.screen, "Você perdeu!", 70, WHITE, center_pos=(WINDOW_SIZE[0]//2, 150))
@@ -286,13 +313,15 @@ class Game:
                             self.game_loop()
 
                         if play2_button.hovering():
-                            self.start_game()
+                            self.stop = time.time()
+                            game_time[self.mode] += self.stop - self.start
+                            self.start_game(mode=self.mode)
 
             pygame.display.update()
             self.clock.tick(FPS)     
         
-    def start_game(self):
-        self.init_game()
+    def start_game(self, mode=0):
+        self.init_game(mode=mode)
         self.main_menu()
 
     def update_ui(self):
@@ -343,3 +372,15 @@ class Game:
         write_text(self.screen, "Evasion line", 14, YELLOW, topleft_pos=(WINDOW_SIZE[0]-90, WINDOW_SIZE[1]//2+5))
         pygame.draw.line(self.screen, YELLOW, (0, WINDOW_SIZE[1]//2), (WINDOW_SIZE[0], WINDOW_SIZE[1]//2), 2)
         
+    def write_game_time(self):
+        l = [t for t in game_time.values()]
+        with open('digital_twin/tempo_de_jogo.csv', 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow(l)
+            
+    def write_scores(self):  
+        l = [self.mode, self.score]
+        with open('digital_twin/pontuacao.csv', 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow(l)
+            
