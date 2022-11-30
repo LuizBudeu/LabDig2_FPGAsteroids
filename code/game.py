@@ -27,7 +27,6 @@ scores = {
     4: 0
 }
 
-reaction_time = {}
 
 class Game:
     def __init__(self):
@@ -110,6 +109,13 @@ class Game:
             '100': 5
         }
         
+        self.reaction_time = {
+            1: [],
+            2: [],
+            3: [],
+            4: []
+        }
+
         self.player = Player(self.total_columns, y=WINDOW_SIZE[1]-50)
         self.asteroids = []
         
@@ -144,12 +150,13 @@ class Game:
                         print(dist)
                         already_exists = False
                         for asteroid in self.asteroids:
+                            print(pos, asteroid.column_pos)
                             if pos == asteroid.column_pos:
                                 already_exists = True
                                 asteroid.move(dist)
-    
+
                         if not already_exists:
-                            self.create_asteroid(pos, self.total_columns, y=dist)
+                            self.create_asteroid(pos, y=dist)
     
                         ser.flushInput()
                 except:
@@ -335,8 +342,9 @@ class Game:
         for asteroid in self.asteroids:
             asteroid.update()
             asteroid.draw(self.screen)
-            if asteroid.colum_pos == self.player.column_pos and asteroid.rect.centery >= WINDOW_SIZE[1]//2:
-                reaction_time[asteroid] += 1
+            if asteroid.column_pos == self.player.column_pos and asteroid.rect.centery >= WINDOW_SIZE[1]//2:
+                # self.reaction_time[asteroid] += 1
+                pass
             
             if self.debug:
                 pygame.draw.rect(self.screen, RED, asteroid.rect, 1)
@@ -344,7 +352,7 @@ class Game:
             if asteroid.rect.y > WINDOW_SIZE[1]:
                 self.asteroids.remove(asteroid)
                 self.score += 1
-                del reaction_time[asteroid]
+                # del self.reaction_time[asteroid]
         
     def handle_player(self):
         self.player.update()
@@ -355,7 +363,7 @@ class Game:
     
     def create_asteroid(self, column, y=70):
         asteroid = Asteroid(column, self.total_columns, y=y)
-        reaction_time[asteroid] = 0
+        # self.reaction_time[self.mode].append({})
         self.asteroids.append(asteroid)
         
     def draw_column_lines(self):
