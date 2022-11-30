@@ -1,0 +1,7 @@
+e0: inicio_jogo
+e1: tem_modo
+e2: modo1
+e3: modo0
+e4: confirmar
+e5: cancelar
+s0: fim_jogo
