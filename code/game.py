@@ -8,6 +8,7 @@ from .mqtt.client import client as mqtt_client
 from .serial.connection import ser
 import csv
 
+fim_de_jogo = False
 
 FPS = 90
 ser.open()
@@ -31,12 +32,21 @@ modo0 = '0'
 modo1 = '0'
 
 class Game:
+
+    def on_message_fim_de_jogo(self, client, userdata, msg):
+        global fim_de_jogo
+        if msg.payload.decode('utf-8') == "1":
+            fim_de_jogo = True
+
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode(WINDOW_SIZE)
         self.clock = pygame.time.Clock()
         pygame.display.set_caption("FPGAsteroids")
         pygame.display.set_icon(pygame.image.load('assets/images/spaceship_icon.png'))
+        mqtt_client.on_message = self.on_message_fim_de_jogo             # Vinculo do Callback de mensagem recebida
+        mqtt_client.loop_start()
+
     
     def game_loop(self):
         self.screen_name = 'game_loop'
@@ -181,6 +191,8 @@ class Game:
         if self.mode == 2 or self.mode == 4: 
             if self.serial_frame_count > 17:
                 self.serial_frame_count = 0
+                print("AAA")
+                print(self.dist_to_serial())
 
                 if dist := self.dist_to_serial():
                         ser.write(dist.encode())
@@ -202,9 +214,14 @@ class Game:
                 
     def dist_to_serial(self):
         dist = -9999
+        temp = -100
         for asteroid in self.asteroids:
             if asteroid.column_pos == self.player.column_pos:
-                dist = WINDOW_SIZE[1] - asteroid.rect.centery
+                temp = WINDOW_SIZE[1] - asteroid.rect.centery
+                if dist == -9999:
+                   dist = temp
+                elif temp < dist:
+                    dist = temp
             
         dist = int(dist*50/700)
         t_dist = dist
@@ -321,26 +338,34 @@ class Game:
         sys.exit()
                 
     def check_lose_state(self):
-        for asteroid in self.asteroids:
-            if asteroid.rect.centery > WINDOW_SIZE[1]-120 and asteroid.column_pos == self.player.column_pos and asteroid.rect.centery < WINDOW_SIZE[1] - 20:  # Collision line
-                if self.mode == 2 or self.mode == 4:
-                    dist = self.dist_to_serial()
-                    ser.write(dist.encode())
-                draw_transparent_rect(self.screen, topleft_pos=(0,0))
-                scores[self.mode] = self.score
-                self.write_scores()
-                self.lose_screen()
+        global fim_de_jogo
+        # for asteroid in self.asteroids:
+        #     if :#asteroid.rect.centery > WINDOW_SIZE[1]-120 and asteroid.column_pos == self.player.column_pos and asteroid.rect.centery < WINDOW_SIZE[1] - 20:  # Collision line
+        if fim_de_jogo == True:
+            if self.mode == 2 or self.mode == 4:
+                dist = self.dist_to_serial()
+                ser.write(dist.encode())
+            draw_transparent_rect(self.screen, topleft_pos=(0,0))
+            scores[self.mode] = self.score
+            self.write_scores()
+            self.lose_screen()
+
+
 
     def lose_screen(self):
         global modo0 
         global modo1 
+        global fim_de_jogo
+
+        fim_de_jogo = False
 
         play1_button = Button(self.screen, text="Recomeçar", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
         play2_button = Button(self.screen, text="Menu Principal", font_size=40, dim=(400, 80), center_pos=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2 + 100), bg_color=(154, 171, 170), bg_tocolor=(110, 122, 122))
         
         self.screen_name = 'lose_screen'
         chosen = False
-        while not chosen:             
+        while not chosen:
+     
             write_text(self.screen, "Você perdeu!", 70, WHITE, center_pos=(WINDOW_SIZE[0]//2, 150))
             play1_button.draw()
             play2_button.draw()

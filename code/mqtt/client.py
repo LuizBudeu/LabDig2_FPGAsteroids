@@ -9,10 +9,9 @@ Port = 80                           # Porta utilizada (firewall da USP exige 80)
 KeepAlive = 60                      # Intervalo de timeout (60s)
 # TopicoL = user+"/req"               # Topico que sera lido
 # TopicoE = user+"/resp"              # Topico que sera escrito
-topics = [(user+'/input', 0), (user+'/pos', 0)]
+topics = [(user+'/input', 0), (user+'/pos', 0), (user+'/S0', 0)]
 
 db = 1                              # Flag de depuracao (verbose)
-message = None
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -23,14 +22,16 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(topics)
     # client.subscribe(user+'/pos')
 
-# The callback for when a PUBLISH message is received from the server.
-def on_message(client, userdata, msg):
-    print(f"{msg.topic} {msg.payload.decode('utf-8')}")
-    # send_to_game(msg.payload.decode('utf-8'))
-    with open('code/mqtt/msg.txt', 'w') as f:
-        f.write(msg.payload.decode('utf-8'))
-    # message = msg.payload.decode('utf-8')
-    # return message
+# # The callback for when a PUBLISH message is received from the server.
+# def on_message(client, userdata, msg):
+#     global fim_de_jogo
+#     print(f"{msg.topic} {msg.payload.decode('utf-8')}")
+#     # send_to_game(msg.payload.decode('utf-8'))
+#     with open('code/mqtt/msg.txt', 'w') as f:
+#         f.write(msg.payload.decode('utf-8'))
+#     fim_de_jogo = [msg.payload.decode('utf-8')]
+#     # message = msg.payload.decode('utf-8')
+#     # return message
 
 # def send_to_game(msg=None):
 #     if msg is not None:
@@ -39,11 +40,11 @@ def on_message(client, userdata, msg):
 
 client = mqtt.Client()                      # Criacao do cliente MQTT
 client.on_connect = on_connect              # Vinculo do Callback de conexao
-client.on_message = on_message              # Vinculo do Callback de mensagem recebida
+# client.on_message = on_message              # Vinculo do Callback de mensagem recebida
 client.username_pw_set(user, passwd)        # Apenas para coneccao com login/senha
 client.connect(Broker, Port, KeepAlive)     # Conexao do cliente ao broker
 # client.loop_forever()
-client.loop_start()
+# client.loop_start()
 
 
 
