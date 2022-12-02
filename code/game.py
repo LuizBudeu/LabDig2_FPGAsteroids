@@ -1,12 +1,12 @@
 import pygame
-import sys, os, time, csv, json
+import sys, os, time, csv
 from .common.settings import *
 from .common.ui_utils import *
 from .player import Player
 from .asteroid import Asteroid
 from .mqtt.client import client as mqtt_client
 from .serial.connection import ser
-import csv
+
 
 fim_de_jogo = False
 
@@ -191,7 +191,6 @@ class Game:
         if self.mode == 2 or self.mode == 4: 
             if self.serial_frame_count > 17:
                 self.serial_frame_count = 0
-                print("AAA")
                 print(self.dist_to_serial())
 
                 if dist := self.dist_to_serial():
@@ -349,8 +348,6 @@ class Game:
             scores[self.mode] = self.score
             self.write_scores()
             self.lose_screen()
-
-
 
     def lose_screen(self):
         global modo0 
