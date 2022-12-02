@@ -47,7 +47,6 @@ class Game:
         mqtt_client.on_message = self.on_message_fim_de_jogo             # Vinculo do Callback de mensagem recebida
         mqtt_client.loop_start()
 
-    
     def game_loop(self):
         self.screen_name = 'game_loop'
         done = False
@@ -175,7 +174,6 @@ class Game:
                         print(dist)
                         already_exists = False
                         for asteroid in self.asteroids:
-                            print(pos, asteroid.column_pos)
                             if pos == asteroid.column_pos:
                                 already_exists = True
                                 asteroid.move(dist)
@@ -191,7 +189,6 @@ class Game:
         if self.mode == 2 or self.mode == 4: 
             if self.serial_frame_count > 17:
                 self.serial_frame_count = 0
-                print(self.dist_to_serial())
 
                 if dist := self.dist_to_serial():
                         ser.write(dist.encode())
@@ -254,7 +251,7 @@ class Game:
         while not chosen: 
             self.draw_background()
             
-            write_text(self.screen, "Escolher modo", 70, WHITE, center_pos=(WINDOW_SIZE[0]//2, 150))
+            write_text(self.screen, "FPGAsteroids", 70, WHITE, center_pos=(WINDOW_SIZE[0]//2, 150))
             play1_button.draw()
             play2_button.draw()
             play3_button.draw()
@@ -330,6 +327,7 @@ class Game:
 
     def quit(self):
         self.stop = time.time()
+        mqtt_client.publish(user+'/E5', '1')
         game_time[self.mode] += self.stop - self.start
         self.write_game_time()
         ser.close()

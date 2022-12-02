@@ -9,7 +9,7 @@ Port = 80                           # Porta utilizada (firewall da USP exige 80)
 KeepAlive = 60                      # Intervalo de timeout (60s)
 # TopicoL = user+"/req"               # Topico que sera lido
 # TopicoE = user+"/resp"              # Topico que sera escrito
-topics = [(user+'/input', 0), (user+'/pos', 0), (user+'/S0', 0)]
+topics = [(user+'/S0', 0)]
 
 db = 1                              # Flag de depuracao (verbose)
 
