@@ -471,6 +471,8 @@ class Game:
             writer.writerow(l)
 
     def write_reaction_time(self, reaction_time):
-        with open('digital_twin/tempo_de_reacao.txt', 'a') as f:
-            f.write(json.dumps(reaction_time)+'\n')
+        l = [t for t in reaction_time.values()]
+        with open('digital_twin/tempo_de_reacao.csv', 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow(l)
             
