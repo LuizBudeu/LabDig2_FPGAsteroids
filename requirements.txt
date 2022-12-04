@@ -1,1 +1,4 @@
 matplotlib
+paho-mqtt
+pyserial
+pygame
