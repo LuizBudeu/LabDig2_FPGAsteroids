@@ -2,20 +2,10 @@
 # tempo de desviar do asteroide: tempo de reação
 # pontuação em cada modo: dificuldade de cada modo
 
-import csv
+from digital_twin_utils import get_integer_data_from_csv
 import matplotlib.pyplot as plt
 
-rows = []
-
-with open('pontuacao.csv', newline='') as csvfile:
-    spamreader = csv.reader(csvfile)
-    for row in spamreader:
-        # print(', '.join(row))
-        if len(row) != 0:
-            rows.append(row)
-
-column_row = rows[0]
-data_rows = [list(map(int, row)) for row in rows[1:]]
+column_row, data_rows = get_integer_data_from_csv("pontuacao.csv")
 
 plt.plot([data_row[0] for data_row in data_rows], [data_row[1] for data_row in data_rows], 'ro')
 plt.xlabel(column_row[0])
