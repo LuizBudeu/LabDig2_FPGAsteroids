@@ -1,6 +1,4 @@
-# tempo nos modos de jogo em uma sessão: modo de jogo mais divertido/chato
-# tempo de desviar do asteroide: tempo de reação
-# pontuação em cada modo: dificuldade de cada modo
+# Interpretação: Dificuldade de cada modo
 
 from digital_twin_utils import get_integer_data_from_csv
 import matplotlib.pyplot as plt
