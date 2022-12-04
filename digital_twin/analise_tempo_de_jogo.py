@@ -1,3 +1,8 @@
+# Cada linha da tabela tempo_de_jogo.csv significa o tempo total gasto pelo jogador
+# em cada um dos modos em uma sessão de jogo
+
+# Interpretação: popularidade ou nível de entretenimento de cada modo
+
 from digital_twin_utils import get_float_data_from_csv
 import matplotlib.pyplot as plt
 

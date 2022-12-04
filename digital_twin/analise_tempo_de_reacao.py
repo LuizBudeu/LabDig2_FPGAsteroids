@@ -1,3 +1,9 @@
+# Cada linha de tempo_de_reacao.csv representa o tempo entre
+# o asteroide cruzar a linha amarela e a nave desviar
+
+# Interpretação: é possível inferir o quão lento é o agente
+# controlador da nave em cada modo de jogo
+
 from digital_twin_utils import get_float_data_from_csv
 import matplotlib.pyplot as plt
 
