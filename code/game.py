@@ -186,23 +186,26 @@ class Game:
                     pass
                 self.serial_frame_count = 0
 
-        if self.mode == 2 or self.mode == 4: 
-            if self.serial_frame_count > 17:
-                self.serial_frame_count = 0
+        if self.mode == 2 or self.mode == 4:
+            try:
+                if self.serial_frame_count > 17:
+                    self.serial_frame_count = 0
 
-                if dist := self.dist_to_serial():
-                        ser.write(dist.encode())
-                        print(dist.encode())
-                        pos = ser.read(8).decode('utf-8')[:3]
-                        print(pos)
-                        if pos:
-                            self.player.move(pos=self.pos_to_column[pos])
-                else:
-                    if self.mode == 4:
-                        ser.write('fff'.encode())
-                        pos = ser.read(8).decode('utf-8')[:3]
-                        if pos:
-                            self.player.move(pos=self.pos_to_column[pos])
+                    if dist := self.dist_to_serial():
+                            ser.write(dist.encode())
+                            print(dist.encode())
+                            pos = ser.read(8).decode('utf-8')[:3]
+                            print(pos)
+                            if pos:
+                                self.player.move(pos=self.pos_to_column[pos])
+                    else:
+                        if self.mode == 4:
+                            ser.write('ooo'.encode())
+                            pos = ser.read(8).decode('utf-8')[:3]
+                            if pos:
+                                self.player.move(pos=self.pos_to_column[pos])
+            except:
+                print("Sinal impuro")
 
         self.read_mqtt_msg()
         self.screen_update()
@@ -447,8 +450,8 @@ class Game:
             self.scroll = 0
             
     def draw_vision_lines(self):
-        write_text(self.screen, "Collision line", 14, RED, topleft_pos=(WINDOW_SIZE[0]-95, WINDOW_SIZE[1]-125))
-        pygame.draw.line(self.screen, RED, (0, WINDOW_SIZE[1]-130), (WINDOW_SIZE[0], WINDOW_SIZE[1]-130), 2)
+        write_text(self.screen, "Collision line", 14, BLUE, topleft_pos=(WINDOW_SIZE[0]-95, WINDOW_SIZE[1]-125))
+        pygame.draw.line(self.screen, BLUE, (0, WINDOW_SIZE[1]-130), (WINDOW_SIZE[0], WINDOW_SIZE[1]-130), 2)
         
         write_text(self.screen, "Evasion line", 14, YELLOW, topleft_pos=(WINDOW_SIZE[0]-90, WINDOW_SIZE[1]//2+5))
         pygame.draw.line(self.screen, YELLOW, (0, WINDOW_SIZE[1]//2), (WINDOW_SIZE[0], WINDOW_SIZE[1]//2), 2)
