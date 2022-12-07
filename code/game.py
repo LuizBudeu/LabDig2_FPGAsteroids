@@ -450,8 +450,8 @@ class Game:
             self.scroll = 0
             
     def draw_vision_lines(self):
-        write_text(self.screen, "Collision line", 14, BLUE, topleft_pos=(WINDOW_SIZE[0]-95, WINDOW_SIZE[1]-125))
-        pygame.draw.line(self.screen, BLUE, (0, WINDOW_SIZE[1]-130), (WINDOW_SIZE[0], WINDOW_SIZE[1]-130), 2)
+        write_text(self.screen, "Collision line", 14, (10, 89, 247), topleft_pos=(WINDOW_SIZE[0]-95, WINDOW_SIZE[1]-125))
+        pygame.draw.line(self.screen, (10, 89, 247), (0, WINDOW_SIZE[1]-130), (WINDOW_SIZE[0], WINDOW_SIZE[1]-130), 2)
         
         write_text(self.screen, "Evasion line", 14, YELLOW, topleft_pos=(WINDOW_SIZE[0]-90, WINDOW_SIZE[1]//2+5))
         pygame.draw.line(self.screen, YELLOW, (0, WINDOW_SIZE[1]//2), (WINDOW_SIZE[0], WINDOW_SIZE[1]//2), 2)

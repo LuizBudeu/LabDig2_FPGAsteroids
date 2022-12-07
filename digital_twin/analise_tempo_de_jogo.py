@@ -16,8 +16,8 @@ tempo_total_modo4 = sum([data_row[3] for data_row in data_rows])
 names = column_row
 values = [tempo_total_modo1, tempo_total_modo2, tempo_total_modo3, tempo_total_modo4]
 
-plt.title("Pontuação acumulada por modo de jogo")
+plt.title("Tempo acumulado por modo de jogo")
 plt.xlabel("Modo de jogo")
-plt.ylabel("Pontuação")
+plt.ylabel("Tempo acumulado")
 plt.bar(names, values)
 plt.show()
