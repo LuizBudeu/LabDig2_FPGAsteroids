@@ -18,6 +18,6 @@ values = [tempo_total_modo1, tempo_total_modo2, tempo_total_modo3, tempo_total_m
 
 plt.title("Tempo acumulado por modo de jogo")
 plt.xlabel("Modo de jogo")
-plt.ylabel("Tempo acumulado")
+plt.ylabel("Tempo acumulado (s)")
 plt.bar(names, values)
 plt.show()
