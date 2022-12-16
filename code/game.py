@@ -473,4 +473,3 @@ class Game:
         with open('digital_twin/tempo_de_reacao.csv', 'a') as f:
             writer = csv.writer(f)
             writer.writerow(l)
-            
